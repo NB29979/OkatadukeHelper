@@ -4,7 +4,9 @@ import re
 import json
 import string
 
-from regex_dict import  RegexDict
+from regex_dict import RegexDict
+from CommandInfo import CommandType
+from CommandInfo import Command
 
 
 HOST = "mqtt.beebotte.com"
@@ -12,6 +14,7 @@ TOPIC = "[Channel]/[Resource]"
 TOKEN = "[Token]"
 CACEPT = "mqtt.beebotte.com.pem"
 PORT = 8883
+
 
 okataduke_command_dict = {}
 
@@ -25,8 +28,17 @@ def on_message(_client, _userdata, _message):
     print('Received result: '+recog_result_)
 
     try:
-        command = convert_recog_result_to_command(recog_result_)
-        print(command)
+        converted_result_ = convert_recog_result_to_command(recog_result_)
+        op_ = converted_result_.split(',')
+        command = Command(op_[0], op_[1:len(op_)])
+
+        if command.type == CommandType.OKATADUKE:
+            # DBに記録
+            pass
+        else:
+            # DBから読み込み
+            pass
+
     except KeyError:
         print('Key error')
 
