@@ -35,7 +35,7 @@ def on_message(_client, _userdata, _message):
         if command.type == CommandType.OKATADUKE:
             # DBに記録
             pass
-        else:
+        elif command.type == CommandType.WHERE:
             # DBから読み込み
             pass
 
