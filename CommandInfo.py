@@ -11,6 +11,6 @@ class Command:
     operands = []
 
     def __init__(self, _type, _operands):
-        self.type = _type
+        self.type = CommandType(int(_type))
         self.operands = _operands
 

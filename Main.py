@@ -3,6 +3,7 @@ import paho.mqtt.client as mqtt
 import re
 import json
 import string
+import sqlite3
 
 from regex_dict import RegexDict
 from CommandInfo import CommandType
@@ -11,7 +12,7 @@ from CommandInfo import Command
 
 HOST = "mqtt.beebotte.com"
 TOPIC = "[Channel]/[Resource]"
-TOKEN = "[Token]"
+TOKEN = "[TokenID]"
 CACEPT = "mqtt.beebotte.com.pem"
 PORT = 8883
 
@@ -32,12 +33,26 @@ def on_message(_client, _userdata, _message):
         op_ = converted_result_.split(',')
         command = Command(op_[0], op_[1:len(op_)])
 
-        if command.type == CommandType.OKATADUKE:
-            # DBに記録
-            pass
-        elif command.type == CommandType.WHERE:
-            # DBから読み込み
-            pass
+        conn = sqlite3.connect('StrageSpaceDB.sqlite3')
+        c = conn.cursor()
+
+        try:
+            if command.type == CommandType.OKATADUKE:
+                # DBに記録
+                c.execute("INSERT INTO storage_space VALUES (?, ?) ON CONFLICT(thing) DO UPDATE SET place = ?;",
+                          (command.operands[0], command.operands[1], command.operands[1]))
+                conn.commit()
+
+            elif command.type == CommandType.WHERE:
+                # DBから読み込み
+                c.execute("SELECT place FROM storage_space WHERE thing = ?;", (command.operands[0],))
+                for record in c.fetchall():
+                    print(record)
+
+        except sqlite3.Error as e:
+            print('sqlite3 error: ', e.args[0])
+
+        conn.close()
 
     except KeyError:
         print('Key error')
