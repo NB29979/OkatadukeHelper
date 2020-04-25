@@ -8,6 +8,7 @@ import sqlite3
 from regex_dict import RegexDict
 from CommandInfo import CommandType
 from CommandInfo import Command
+from SpeechGenerator import SpeechGenerator
 
 
 HOST = "mqtt.beebotte.com"
@@ -38,16 +39,15 @@ def on_message(_client, _userdata, _message):
 
         try:
             if command.type == CommandType.OKATADUKE:
-                # DBに記録
                 c.execute("INSERT INTO storage_space VALUES (?, ?) ON CONFLICT(thing) DO UPDATE SET place = ?;",
                           (command.operands[0], command.operands[1], command.operands[1]))
                 conn.commit()
 
             elif command.type == CommandType.WHERE:
-                # DBから読み込み
                 c.execute("SELECT place FROM storage_space WHERE thing = ?;", (command.operands[0],))
-                for record in c.fetchall():
-                    print(record)
+
+                speech_generator = SpeechGenerator()
+                speech_generator.generate_speech_file(c.fetchall()[0][0]+'です！')
 
         except sqlite3.Error as e:
             print('sqlite3 error: ', e.args[0])
