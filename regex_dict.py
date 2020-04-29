@@ -1,4 +1,5 @@
 import re
+from typing import Pattern
 
 
 class RegexDict(dict):
@@ -11,7 +12,7 @@ class RegexDict(dict):
             return super(self.__class__, self).__getitem__(item)
         except:
             for key, value in self.items():
-                if isinstance(key, re.Pattern) and key.match(item):
+                if isinstance(key, Pattern) and key.match(item):
                     return value
             raise KeyError('key not found for %s'%item)
 
