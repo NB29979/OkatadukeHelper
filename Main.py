@@ -4,26 +4,31 @@ import json
 import string
 import sqlite3
 import datetime
-import requests
-import pychromecast
 
 import paho.mqtt.client as mqtt
 
 from regex_dict import RegexDict
-from CommandInfo import CommandType
-from CommandInfo import Command
+from CommandInfo import CommandType, Command
+from SpeechGenerator import SpeechGenerator
 
-
-HOST = "mqtt.beebotte.com"
-TOPIC = "[CHANNEL]/[RESOURCE]"
-TOKEN = "[TOKEN]"
-CACEPT = "mqtt.beebotte.com.pem"
-PORT = 8883
 
 okataduke_command_dict = {}
+project_settings = {}
 
-chromecasts = pychromecast.get_chromecasts()
-google_home = next(cc for cc in chromecasts if cc.device.friendly_name == [YOUR_GOOGLEHOME_NAME])
+with open('OkatadukeCommands.json', 'r', encoding='utf-8') as ref_json:
+    okataduke_command_dict = RegexDict(json.load(ref_json))
+
+with open('ProjectSettings.json', 'r', encoding='utf-8') as ref_json:
+    project_settings = json.load(ref_json)
+
+HOST   = "mqtt.beebotte.com"
+TOPIC  = project_settings['mqtt']['topic']
+TOKEN  = project_settings['mqtt']['token']
+CACEPT = "mqtt.beebotte.com.pem"
+PORT   = 8883
+
+speech_generator = SpeechGenerator(project_settings['speech_generator'])
+
 
 def on_connect(_client, _userdata, _flg, _res_code):
     client.subscribe(TOPIC)
@@ -50,27 +55,12 @@ def on_message(_client, _userdata, _message):
             elif command_.type == CommandType.WHERE:
                 c_.execute("SELECT place FROM storage_space WHERE thing = ?;", (command_.operands[0],))
 
-                request_text_ = c_.fetchall()[0][0]+'です！'
-                json_data_ = {
-                    'api_key': [YOUR_TTS_API_KEY],
-                    'text': request_text_,
-                    'bucket_name': [YOUR_BUCKET_NAME_ON_GCS],
-                    'key_filename': [YOUR_SERVICE_ACCOUNT_KEY_FILENAME]
-                }
-
-                url_ = [YOUR_CLOUD_FUNCTION_URL]
-                jd_ = json.dumps(json_data_)
-                headers_ = {'Content-Type': 'application/json; charset=utf-8'}
-
-                s_ = requests.Session()
-                res_ = requests.post(url_, data=jd_, headers=headers_)
-
-                google_home.wait()
-                google_home.media_controller.play_media(res_.text, 'audio.mp3')
-                google_home.media_controller.block_until_active()
+                place_ = c_.fetchall()[0][0]
+                speech_generator.generate_speech(place_+'です！')
 
         except sqlite3.Error as e:
             print('sqlite3 error: ', e.args[0])
+            speech_generator.generator_speech('データベースのエラーです')
 
         conn_.close()
 
@@ -94,9 +84,6 @@ def convert_recog_result_to_command(_recog_result):
 
 
 if __name__ == '__main__':
-    with open('OkatadukeCommands.json', 'r', encoding='utf-8') as ref_json:
-        okataduke_command_dict = RegexDict(json.load(ref_json))
-
     print('System ready')
 
     client = mqtt.Client()

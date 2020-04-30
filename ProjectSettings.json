@@ -1,0 +1,13 @@
+{
+    "mqtt":{
+        "topic": [CHANNEL/RESOURCE],
+        "token": [TOKEN]
+    },
+    "speech_generator":{
+        "googlehome_name":        [GOOGLEHOME_NAME],
+        "tts_api_key":            [TTS_API_KEY],
+        "gcs_bucket_name":        [GCS_BUCKET_NAME],
+        "gcs_key_filename":       [GCS_KEY_FILENAME],
+        "gcp_cloud_function_url": [CLOUD_FUNCTION_URL]
+    }
+}
