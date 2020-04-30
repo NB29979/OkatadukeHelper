@@ -23,7 +23,7 @@ PORT = 8883
 okataduke_command_dict = {}
 
 chromecasts = pychromecast.get_chromecasts()
-google_home = next(cc for cc in chromecasts if cc.device.friendly_name == [YOUR_GOOGLE_HOME_NAME])
+google_home = next(cc for cc in chromecasts if cc.device.friendly_name == [YOUR_GOOGLEHOME_NAME])
 
 def on_connect(_client, _userdata, _flg, _res_code):
     client.subscribe(TOPIC)
@@ -36,26 +36,26 @@ def on_message(_client, _userdata, _message):
     try:
         converted_result_ = convert_recog_result_to_command(recog_result_)
         op_ = converted_result_.split(',')
-        command = Command(op_[0], op_[1:len(op_)])
+        command_ = Command(op_[0], op_[1:len(op_)])
 
-        conn = sqlite3.connect('StrageSpaceDB.sqlite3')
-        c = conn.cursor()
+        conn_ = sqlite3.connect('StrageSpaceDB.sqlite3')
+        c_ = conn_.cursor()
 
         try:
-            if command.type == CommandType.OKATADUKE:
-                c.execute("INSERT INTO storage_space VALUES (?, ?) ON CONFLICT(thing) DO UPDATE SET place = ?;",
-                          (command.operands[0], command.operands[1], command.operands[1]))
-                conn.commit()
+            if command_.type == CommandType.OKATADUKE:
+                c_.execute("INSERT INTO storage_space VALUES (?, ?) ON CONFLICT(thing) DO UPDATE SET place = ?;",
+                          (command_.operands[0], command_.operands[1], command_.operands[1]))
+                conn_.commit()
 
-            elif command.type == CommandType.WHERE:
-                c.execute("SELECT place FROM storage_space WHERE thing = ?;", (command.operands[0],))
+            elif command_.type == CommandType.WHERE:
+                c_.execute("SELECT place FROM storage_space WHERE thing = ?;", (command_.operands[0],))
 
-                request_text_ = c.fetchall()[0][0]+'です！'
+                request_text_ = c_.fetchall()[0][0]+'です！'
                 json_data_ = {
                     'api_key': [YOUR_TTS_API_KEY],
                     'text': request_text_,
                     'bucket_name': [YOUR_BUCKET_NAME_ON_GCS],
-                    'key_filename': [YOUR_SERVICE_ACCOUNT_JSON_KEY_FILENAME]
+                    'key_filename': [YOUR_SERVICE_ACCOUNT_KEY_FILENAME]
                 }
 
                 url_ = [YOUR_CLOUD_FUNCTION_URL]
@@ -72,18 +72,18 @@ def on_message(_client, _userdata, _message):
         except sqlite3.Error as e:
             print('sqlite3 error: ', e.args[0])
 
-        conn.close()
+        conn_.close()
 
     except KeyError:
         print('Key error')
 
 
 def extract_variables(_recog_result):
-    words = [word for word in re.findall(r'([一-龥]*[ァ-ー]+|[一-龥]+)', _recog_result) if word != '']
+    words_ = [word_ for word_ in re.findall(r'([一-龥]*[ァ-ー]+|[一-龥]+)', _recog_result) if word_ != '']
     var_dict_ = {}
-    if words:
-        for i in range(len(words)):
-            var_dict_['w'+str(i+1)] = words[i]
+    if words_:
+        for i in range(len(words_)):
+            var_dict_['w'+str(i+1)] = words_[i]
     return var_dict_
 
 
