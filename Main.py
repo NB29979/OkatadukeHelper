@@ -7,7 +7,7 @@ import datetime
 
 import paho.mqtt.client as mqtt
 
-from regex_dict import RegexDict
+from RegexDict import RegexDict
 from CommandInfo import CommandType, Command
 from SpeechGenerator import SpeechGenerator
 
