@@ -1,4 +1,5 @@
 # -*- utf-8 -*-
+import os
 import re
 import json
 import string
@@ -15,10 +16,12 @@ from SpeechGenerator import SpeechGenerator
 okataduke_command_dict = {}
 project_settings = {}
 
-with open('OkatadukeCommands.json', 'r', encoding='utf-8') as ref_json:
+TARGET_DIR_PATH = os.path.dirname(__file__)
+
+with open(os.path.join(TARGET_DIR_PATH, 'OkatadukeCommands.json'), 'r', encoding='utf-8') as ref_json:
     okataduke_command_dict = RegexDict(json.load(ref_json))
 
-with open('ProjectSettings.json', 'r', encoding='utf-8') as ref_json:
+with open(os.path.join(TARGET_DIR_PATH, 'ProjectSettings.json'), 'r', encoding='utf-8') as ref_json:
     project_settings = json.load(ref_json)
 
 HOST   = "mqtt.beebotte.com"
@@ -43,7 +46,7 @@ def on_message(_client, _userdata, _message):
         op_ = converted_result_.split(',')
         command_ = Command(op_[0], op_[1:len(op_)])
 
-        conn_ = sqlite3.connect('StrageSpaceDB.sqlite3')
+        conn_ = sqlite3.connect(os.path.join(TARGET_DIR_PATH, 'StrageSpaceDB.sqlite3'))
         c_ = conn_.cursor()
 
         try:
