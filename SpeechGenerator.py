@@ -1,6 +1,7 @@
 import json
 import requests
 import pychromecast
+import time
 
 
 class SpeechGenerator:
@@ -27,6 +28,8 @@ class SpeechGenerator:
 
         s_ = requests.Session()
         res_ = requests.post(url_, data=jd_, headers=headers_)
+
+        time.sleep(2)
 
         self.googlehome.wait()
         self.googlehome.media_controller.play_media(res_.text, 'audio.mp3')
