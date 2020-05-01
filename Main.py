@@ -93,6 +93,6 @@ if __name__ == '__main__':
     client.on_connect = on_connect
     client.on_message = on_message
     client.username_pw_set("token:%s" % TOKEN)
-    client.tls_set(CACEPT)
+    client.tls_set(os.path.join(TARGET_DIR_PATH, CACEPT))
     client.connect(HOST, port=PORT, keepalive=60)
     client.loop_forever()
